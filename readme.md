@@ -1,5 +1,10 @@
 **Status:** This fork does not support and require tensorflow. Moreover it only supports the pytorch version of ddpg algo with new supported gymnasium instead of OpenAI gym.
 
+Install with (inside root of repo):
+```
+pip install -e .
+```
+
 To start, use the following
 ```
 python3 spinup/algos/pytorch/ddpg/ddpg.py
