@@ -1,6 +1,11 @@
 **Status:** This fork does not support and require tensorflow. Moreover it only supports the pytorch version of ddpg algo with new supported gymnasium instead of OpenAI gym.
 
-It also reloads the latest model.pt if exists.
+To start, use the following
+```
+python3 spinup/algos/pytorch/ddpg/ddpg.py
+```
+
+It also reloads the latest model.pt if exists and start human render mode.
 
 Welcome to Spinning Up in Deep RL! 
 ==================================
