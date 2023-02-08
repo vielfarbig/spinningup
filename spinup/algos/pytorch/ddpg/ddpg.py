@@ -6,6 +6,7 @@ import gymnasium as gym
 import time
 import spinup.algos.pytorch.ddpg.core as core
 from spinup.utils.logx import EpochLogger
+import os
 
 
 class ReplayBuffer:
@@ -145,7 +146,9 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
 
     # Create actor-critic module and target networks
     ac = actor_critic(env.observation_space, env.action_space, **ac_kwargs)
-    ac = torch.load("../../../../data/ddpg/ddpg_s0/pyt_save/model.pt")
+    model_path = "../../../../data/ddpg/ddpg_s0/pyt_save/model.pt"
+    if os.path.isfile(model_path):
+        ac = torch.load(model_path)
     ac_targ = deepcopy(ac)
 
     # Freeze target networks with respect to optimizers (only update via polyak averaging)

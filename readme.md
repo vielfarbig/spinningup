@@ -1,4 +1,6 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
+**Status:** This fork does not support and require tensorflow. Moreover it only supports the pytorch version of ddpg algo with new supported gymnasium instead of OpenAI gym.
+
+It also reloads the latest model.pt if exists.
 
 Welcome to Spinning Up in Deep RL! 
 ==================================
