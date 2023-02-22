@@ -12,6 +12,12 @@ python3 spinup/algos/pytorch/ddpg/ddpg.py
 
 It also reloads the latest model.pt if exists and start human render mode.
 
+One can extract the single actor (and critic) mlp with the following:
+
+```
+python3 spinup/algos/pytorch/ddpg/extract_mlp.py
+```
+
 Welcome to Spinning Up in Deep RL! 
 ==================================
 
