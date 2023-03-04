@@ -247,7 +247,7 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
                 ep_len += 1
             logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
 
-    points = {'x': [], 'y': [], 'z': []}
+    points = {'x': [], 'y': [], 'z': [], 'r': []}
 
     # Prepare for interaction with environment
     total_steps = steps_per_epoch * epochs
@@ -266,14 +266,16 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
         else:
             a = env.action_space.sample()
 
+        # Step the env
+        o2, r, d, truncated, _ = env.step(a)
+
         if extract_points:
             o_list = list(o)
             points['x'].append(float(o_list[0]))
             points['y'].append(float(o_list[1]))
             points['z'].append(float(list(a)[0]))
+            points['r'].append(r)
 
-        # Step the env
-        o2, r, d, truncated, _ = env.step(a)
         ep_ret += r
         ep_len += 1
 
@@ -297,7 +299,7 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             if extract_points:
                 import json
 
-                with open('points.json', 'w', encoding='utf-8') as f:
+                with open('action_points.json', 'w', encoding='utf-8') as f:
                     json.dump(points, f, ensure_ascii=False, indent=4)
                 return
 
