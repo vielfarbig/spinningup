@@ -46,7 +46,7 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
          steps_per_epoch=4000, epochs=100, replay_size=int(1e6), gamma=0.99,
          polyak=0.995, pi_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=0,
          update_after=500, update_every=10, act_noise=0, num_test_episodes=10,
-         max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
+         max_ep_len=1000, logger_kwargs=dict(), save_freq=1, extract_points=False):
     """
     Deep Deterministic Policy Gradient (DDPG)
 
@@ -146,9 +146,13 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
 
     # Create actor-critic module and target networks
     ac = actor_critic(env.observation_space, env.action_space, **ac_kwargs)
+
     model_path = "../../../../data/ddpg/ddpg_s0/pyt_save/model.pt"
     if os.path.isfile(model_path):
         ac = torch.load(model_path)
+    model_path = "../../../../data/ddpg/ddpg_s0/pyt_save/smaller_ac_pi_pi_model_2_8_8_1.pt"
+    if os.path.isfile(model_path):
+        ac.pi.pi = torch.load(model_path)
     ac_targ = deepcopy(ac)
 
     # Freeze target networks with respect to optimizers (only update via polyak averaging)
@@ -243,6 +247,8 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
                 ep_len += 1
             logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
 
+    points = {'x': [], 'y': [], 'z': []}
+
     # Prepare for interaction with environment
     total_steps = steps_per_epoch * epochs
     start_time = time.time()
@@ -259,6 +265,12 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             a = get_action(o, act_noise)
         else:
             a = env.action_space.sample()
+
+        if extract_points:
+            o_list = list(o)
+            points['x'].append(float(o_list[0]))
+            points['y'].append(float(o_list[1]))
+            points['z'].append(float(list(a)[0]))
 
         # Step the env
         o2, r, d, truncated, _ = env.step(a)
@@ -282,6 +294,12 @@ def ddpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             logger.store(EpRet=ep_ret, EpLen=ep_len)
             o, ep_ret, ep_len = env.reset(), 0, 0
             o = o[0]
+            if extract_points:
+                import json
+
+                with open('points.json', 'w', encoding='utf-8') as f:
+                    json.dump(points, f, ensure_ascii=False, indent=4)
+                return
 
         # Update handling
         if t >= update_after and t % update_every == 0:
@@ -323,6 +341,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--exp_name', type=str, default='ddpg')
+    parser.add_argument('--extract_points', type=bool, default=True)
     args = parser.parse_args()
 
     from spinup.utils.run_utils import setup_logger_kwargs
@@ -331,4 +350,4 @@ if __name__ == '__main__':
     ddpg(lambda : gym.make(args.env, render_mode="human"), core.MLPActorCritic,
          ac_kwargs=dict(hidden_sizes=[args.hid]*args.l),
          gamma=args.gamma, seed=args.seed, epochs=args.epochs,
-         logger_kwargs=logger_kwargs)
+         logger_kwargs=logger_kwargs, extract_points=args.extract_points)
